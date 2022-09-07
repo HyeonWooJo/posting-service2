@@ -1,24 +1,10 @@
-import bcrypt
 import re
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Posting
-
-
-def hash_psword(psword: str):
-    """
-    bcrypt를 이용한 비밀번호 암호화
-    :param password: string
-    :return: 암호호된 비밀번호
-    """
-    hashed_psword = bcrypt.hashpw(
-        psword.encode('utf-8'),
-        bcrypt.gensalt()
-    )
-    decode_psword = hashed_psword.decode('utf-8')
-    return decode_psword
+from .models        import Posting
+from postings.utils import hash_psword, check_psword
 
 
 class PostingSerializer(serializers.ModelSerializer):
@@ -27,10 +13,12 @@ class PostingSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Posting
-        # fields = "__all__"
-        exclude = ["id"]
+        fields = "__all__"
         extra_kwargs = {
-            "psword": {"write_only": True},
+            "id": {"read_only": True},
+            "password": {"write_only": True},
+            "created_at": {"read_only": True},
+            "updated_at": {"read_only": True}
         }
 
     def validate_psword(self, psword:str):
@@ -45,6 +33,8 @@ class PostingSerializer(serializers.ModelSerializer):
 
         if not re.match(REGEX_PASSWORD, psword):
             raise ValidationError('INVALID_PASSWORD')
+
+        return psword
 
     def validate_title(self, title: str):
         """
@@ -90,10 +80,11 @@ class PostingSerializer(serializers.ModelSerializer):
         :param validated_data:
         :return: instance
         """
-        instance.psword = hash_psword(validated_data.pop('psword'))
-        instance.title = validated_data.get('title', instance.title)
-        instance.content = validated_data.get('content', instance.content)
-        instance.password = hash_psword(validated_data.get('password', instance.password))
+        psword = validated_data['psword']
+        if not check_psword(psword, instance):
+            raise ValidationError("비밀번호가 맞지 않습니다.")
+        
+        instance.title = validated_data['title']
+        instance.context = validated_data['context']
         instance.save()
-
-        return super().update(instance, validated_data)
+        return instance
