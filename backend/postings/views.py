@@ -24,7 +24,7 @@ class PostsAPI(APIView):
 
     def post(self, request):
         """
-        게시글 생성 API
+        게시글 생성 A PI
         :param: title: str
         :param: content: str
         :param: password: str
@@ -34,4 +34,4 @@ class PostsAPI(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(status=status.HTTP_201_OK)
+        return Response(status=status.HTTP_200_OK)
