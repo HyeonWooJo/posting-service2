@@ -1,5 +1,4 @@
 import os
-import bcrypt
 
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -12,7 +11,7 @@ from .serializers import PostingSerializer
 
 
 # 게시글 생성 및 리스트 조회
-class PostsAPI(APIView):
+class PostingListCreateAPIView(APIView):
     def get(self, request):
         """
         게시글 리스트 조회 API
@@ -27,11 +26,18 @@ class PostsAPI(APIView):
         게시글 생성 A PI
         :param: title: str
         :param: content: str
-        :param: password: str
+        :param: psword: str
         :return: 게시글 생성 성공 여부
         """
         serializer = PostingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class PostingDeleteUpdateAPIView(APIView):
+    def delete(self, request, id):
+        posting = Posting.objects.get(id=id)
+        posting.delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)

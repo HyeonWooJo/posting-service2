@@ -49,7 +49,7 @@ class PostingSerializer(serializers.ModelSerializer):
     def validate_title(self, title: str):
         """
         제목 유효성 검사
-            - 최대 20자 제하
+            - 최대 20자 제한
         :param title: string
         :return: title
         """
